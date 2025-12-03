@@ -89,7 +89,7 @@
 <div class="container">
   <h1>Ajouter un Nouvel Article</h1>
 
-  <form action="app" method="post">
+  <form action="${pageContext.request.contextPath}/app" method="post">
     <input type="hidden" name="action" value="create">
 
     <div class="form-group">
@@ -112,7 +112,7 @@
 
     <div class="button-group">
       <button type="submit" class="btn btn-primary">Enregistrer</button>
-      <a href="app?action=list" class="btn btn-secondary">Annuler</a>
+      <a href="${pageContext.request.contextPath}/app" class="btn btn-secondary">Annuler</a>
     </div>
   </form>
 </div>

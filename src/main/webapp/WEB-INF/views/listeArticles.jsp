@@ -120,7 +120,7 @@
   %>
 
   <div style="margin: 20px 0;">
-    <a href="app?action=new" class="btn btn-primary">+ Nouvel Article</a>
+    <a href="app/new" class="btn btn-primary">+ Nouvel Article</a>
   </div>
 
   <table>
@@ -143,9 +143,9 @@
       <td><%= article.getDesignation() %></td>
       <td><%= String.format("%.2f", article.getPrix()) %></td>
       <td class="actions">
-        <a href="app?action=edit&code=<%= article.getCode() %>"
+        <a href="app/edit?code=<%= article.getCode() %>"
            class="btn btn-warning">Modifier</a>
-        <a href="app?action=delete&code=<%= article.getCode() %>"
+        <a href="app/delete?code=<%= article.getCode() %>"
            class="btn btn-danger"
            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet article?')">
           Supprimer

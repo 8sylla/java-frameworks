@@ -1,63 +1,88 @@
 package com.example.demo1.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.springframework.stereotype.Component;
 
-public class DaoArticle {
-    private static DaoArticle instance;
-    private final List<Article> articles;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-    private DaoArticle() {
-        articles = new ArrayList<>();
-        articles.add(new Article("A001", "Ordinateur portable", 899.99));
-        articles.add(new Article("A002", "Souris sans fil", 25.50));
-        articles.add(new Article("A003", "Clavier mécanique", 75.00));
-    }
+@Component
+public class DaoArticle implements IDao<Article> {
+    Transaction Tx=null;
+    private List<Article> articles = new CopyOnWriteArrayList<>();
+    private static DaoArticle instance = new DaoArticle();
 
-    public static synchronized DaoArticle getInstance() {
-        if (instance == null) {
-            instance = new DaoArticle();
-            System.out.println("C'est fait");
-        }
-        System.out.println("C'est fait");
+    // private DaoArticle() {
+    //     //articles = findAll();
+    //     // articles.add(new Article("Art1","Article1",120));
+    //     // articles.add(new Article("Art2","Article2",150));
+    //     // articles.add(new Article("Art3","Article3",180));
+    // }
+    // Singleton simple pour partager la même instance dans toute l'application
+    public static DaoArticle getInstance() {
         return instance;
     }
 
     public List<Article> findAll() {
-        return new ArrayList<>(articles);
+        // return new ArrayList<>(articles);
+        List<Article> articles = new ArrayList<Article>();
+
+        try {
+            Session S= HibernateUtil.getSessionFactory().openSession();
+            Tx =S.beginTransaction();
+            System.err.println("LISTING ARTICLES SUCCESS");
+            String Req ="FROM Article";
+            articles = S.createQuery(Req).list();
+            Tx.commit();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return articles;
     }
 
-    public Optional<Article> findByCode(String code) {
-        return articles.stream()
-                .filter(a -> a.getCode().equals(code))
-                .findFirst();
+    public Article findByCode(String code) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Article article = session.get(Article.class, code);
+        session.close();
+        return article;
     }
 
     public boolean create(Article article) {
-        if (findByCode(article.getCode()).isPresent()) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction  tx = session.beginTransaction();
+
+        Article art = session.get(Article.class, article.getCode());
+
+        if (art != null) {
+            session.close();
             return false;
         }
-        articles.add(article);
+        session.save(article);
+        tx.commit();
+        session.close();
         return true;
     }
 
     public boolean update(Article article) {
-        Optional<Article> existingArticle = findByCode(article.getCode());
-        if (existingArticle.isPresent()) {
-            Article a = existingArticle.get();
-            a.setDesignation(article.getDesignation());
-            a.setPrix(article.getPrix());
-            return true;
-        }
-        return false;
+
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        session.update(article);
+        tx.commit();
+        session.close();
+        return true;
     }
 
     public boolean delete(String code) {
-        return articles.removeIf(a -> a.getCode().equals(code));
-    }
-
-    public int count() {
-        return articles.size();
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction tx = session.beginTransaction();
+        Article article = session.get(Article.class, code);
+        session.delete(article);
+        tx.commit();
+        session.close();
+        return true;
     }
 }

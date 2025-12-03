@@ -105,7 +105,7 @@
     if (article != null) {
   %>
 
-    <form action="app" method="post">
+    <form action="${pageContext.request.contextPath}/app/update" method="post">
     <input type="hidden" name="action" value="update">
     <input type="hidden" name="code" value="<%= article.getCode() %>">
 
@@ -129,14 +129,14 @@
 
     <div class="button-group">
       <button type="submit" class="btn btn-warning">Mettre à jour</button>
-      <a href="app?action=list" class="btn btn-secondary">Annuler</a>
+      <a href="${pageContext.request.contextPath}/app" class="btn btn-secondary">Annuler</a>
     </div>
   </form>
 
     <%} else {%>
 
     <p style="color: red;">Article introuvable</p>
-  <a href="app?action=list" class="btn btn-secondary">Retour à la liste</a>
+  <a href="${pageContext.request.contextPath}/app" class="btn btn-secondary">Retour à la liste</a>
 
     <%}
 %>
