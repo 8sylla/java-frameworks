@@ -1,145 +1,270 @@
-# Application CRUD Articles - Java MVC avec Front Controller
+# 🎓 Gestion Académique - Application MVC avec Hibernate
 
-## Description
-Application web Java pour gérer des articles (code, désignation, prix) en utilisant le pattern MVC avec un **Front Controller unique** mappé sur `/app`. Toutes les opérations CRUD passent par cette servlet centrale.
+## 📋 Description du Projet
 
-## Architecture
+Application web de gestion académique développée avec **Hibernate pur**, **JSP/JSTL** et architecture **MVC**. Cette application permet de gérer les filières, élèves, cours et dossiers administratifs.
 
-### Structure du Projet
+## 🏗️ Architecture
+
+### Structure MVC Simplifiée
 ```
-src/
-├── model/
-│   ├── Article.java          # Entité Article
-│   └── DaoArticle.java        # DAO en mémoire (Singleton)
-└── controller/
-    └── FrontController.java   # Servlet unique pour toutes les opérations
-
-webapp/
-├── WEB-INF/
-│   ├── views/
-│   │   ├── listeArticles.jsp # Liste des articles
-│   │   ├── Article.jsp        # Formulaire création
-│   │   └── EditArticle.jsp    # Formulaire édition
-│   └── web.xml                # Configuration
-└── index.jsp                  # Redirection vers /app
+gestion-academique/
+├── src/main/java/com/gestion/
+│   ├── model/              # Entités JPA
+│   │   ├── Filiere.java
+│   │   ├── Eleve.java
+│   │   ├── DossierAdministratif.java
+│   │   └── Cours.java
+│   ├── dao/                # Data Access Objects
+│   │   ├── CRUD.java       # Interface générique
+│   │   ├── GenericDAO.java
+│   │   ├── FiliereDAO.java
+│   │   ├── EleveDAO.java
+│   │   ├── DossierAdministratifDAO.java
+│   │   └── CoursDAO.java
+│   ├── service/            # Logique métier
+│   │   ├── FiliereService.java
+│   │   ├── EleveService.java
+│   │   ├── DossierAdministratifService.java
+│   │   └── CoursService.java
+│   ├── controller/         # Servlets
+│   │   ├── FiliereController.java
+│   │   ├── EleveController.java
+│   │   ├── DossierAdministratifController.java
+│   │   └── CoursController.java
+│   └── util/
+│       └── HibernateUtil.java
+├── src/main/resources/
+│   └── META-INF/
+│       └── persistence.xml
+└── src/main/webapp/
+    ├── WEB-INF/
+    │   ├── web.xml
+    │   └── views/
+    │       ├── filiere/
+    │       │   ├── list.jsp
+    │       │   └── form.jsp
+    │       ├── eleve/
+    │       │   ├── list.jsp
+    │       │   └── form.jsp
+    │       ├── cours/
+    │       │   ├── list.jsp
+    │       │   └── form.jsp
+    │       └── dossier/
+    │           ├── list.jsp
+    │           └── form.jsp
+    └── index.jsp
 ```
 
-### Choix Techniques
+## 🔗 Relations entre Entités
 
-#### 1. **Front Controller Pattern**
-- Une seule servlet (`FrontController`) mappée sur `/app`
-- Gère toutes les requêtes via le paramètre `action`
-- Centralise la logique de navigation et de contrôle
+```
+Filiere 1 ---> * Eleve (OneToMany)
+Eleve * ---> 1 Filiere (ManyToOne)
+Eleve 1 ---> 1 DossierAdministratif (OneToOne)
+Filiere * <---> * Cours (ManyToMany)
+Eleve * <---> * Cours (ManyToMany)
+```
 
-#### 2. **DAO Singleton**
-- `DaoArticle` implémenté en Singleton pour garantir une instance unique
-- Stockage en mémoire avec une `ArrayList<Article>`
-- Données initialisées avec 3 articles de test
+## 🛠️ Technologies Utilisées
 
-#### 3. **MVC Strict**
-- **Model**: `Article` (entité) + `DaoArticle` (gestion données)
-- **View**: JSP dans `/WEB-INF/views/` (protégées)
-- **Controller**: `FrontController` (routage et orchestration)
+- **Java 11**
+- **Hibernate 5.6.15.Final** (JPA)
+- **MySQL 8.0**
+- **Servlet API 4.0**
+- **JSP/JSTL 1.2**
+- **Maven 3.x**
+- **Apache Tomcat 9.x**
 
-#### 4. **Gestion des Actions**
-- **GET**: `list`, `new`, `edit`, `delete`
-- **POST**: `create`, `update`
-- Redirection vers la liste après chaque opération
+## 📦 Prérequis
 
-## URLs et Actions
+1. **JDK 11** ou supérieur
+2. **Apache Maven 3.6+**
+3. **MySQL 8.0+**
+4. **Apache Tomcat 9.0+**
+5. **IDE** (Eclipse, IntelliJ IDEA, NetBeans)
 
-### Actions disponibles
+## 🚀 Installation et Configuration
 
-| Action | Méthode | URL | Description |
-|--------|---------|-----|-------------|
-| **list** | GET | `/app` ou `/app?action=list` | Afficher tous les articles |
-| **new** | GET | `/app?action=new` | Afficher formulaire création |
-| **create** | POST | `/app?action=create` | Créer un nouvel article |
-| **edit** | GET | `/app?action=edit&code=XXX` | Afficher formulaire édition |
-| **update** | POST | `/app?action=update` | Mettre à jour un article |
-| **delete** | GET | `/app?action=delete&code=XXX` | Supprimer un article |
+### Étape 1: Cloner le projet
+```bash
+git clone [url-du-projet]
+cd gestion-academique
+```
 
+### Étape 2: Configurer la base de données MySQL
 
-## Fonctionnalités
+```sql
+CREATE DATABASE gestion_academique CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-### CREATE (Créer)
-- Formulaire de saisie avec validation
-- Vérification de l'unicité du code
-- Message de confirmation ou d'erreur
+CREATE USER 'gestion_user'@'localhost' IDENTIFIED BY 'votre_mot_de_passe';
+GRANT ALL PRIVILEGES ON gestion_academique.* TO 'gestion_user'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-### READ (Lire)
-- Liste complète des articles
-- Affichage en tableau avec design moderne
-- Compteur d'articles
+### Étape 3: Modifier persistence.xml
 
-### UPDATE (Modifier)
-- Formulaire pré-rempli avec les données actuelles
-- Code non modifiable (clé primaire)
-- Mise à jour de la désignation et du prix
+Ouvrez `src/main/resources/META-INF/persistence.xml` et modifiez:
+```xml
+<property name="javax.persistence.jdbc.user" value="gestion_user"/>
+<property name="javax.persistence.jdbc.password" value="votre_mot_de_passe"/>
+```
 
-### DELETE (Supprimer)
-- Confirmation JavaScript avant suppression
-- Suppression immédiate
-- Message de confirmation
+### Étape 4: Compiler le projet
 
-## Sécurité et Bonnes Pratiques
+```bash
+mvn clean package
+```
 
-### Protection des JSP
-- Toutes les vues dans `/WEB-INF/views/`
-- Accès impossible en URL directe
-- Passage obligatoire par le contrôleur
+### Étape 5: Déployer sur Tomcat
 
-### Validation
-- Validation côté client (HTML5 required)
-- Validation côté serveur dans le DAO
-- Gestion des erreurs avec messages utilisateur
+1. Copiez le fichier WAR généré: `target/gestion-academique.war`
+2. Collez-le dans le dossier `webapps` de Tomcat
+3. Démarrez Tomcat
 
-### Gestion des Erreurs
-- Try-catch dans le contrôleur
-- Messages d'erreur explicites
-- Pages d'erreur personnalisées (404, 500)
+Ou directement depuis votre IDE en configurant un serveur Tomcat.
 
-## Données de Test
+### Étape 6: Accéder à l'application
 
-L'application est initialisée avec 3 articles:
+Ouvrez votre navigateur: `http://localhost:8080/gestion-academique/`
 
-| Code | Désignation | Prix |
-|------|-------------|------|
-| A001 | Ordinateur portable | 899.99 DH |
-| A002 | Souris sans fil | 25.50 DH |
-| A003 | Clavier mécanique | 75.00 DH |
+## 📝 Fonctionnalités
 
-## Captures d'Écran
+### Module Filières
+- ✅ Créer une nouvelle filière
+- ✅ Lister toutes les filières
+- ✅ Modifier une filière existante
+- ✅ Supprimer une filière (si aucun élève inscrit)
+- ✅ Recherche par code unique
 
-### 1. Liste des Articles
-![Liste](screenshots/liste.png)
-- Tableau avec tous les articles
-- Boutons d'action (Modifier, Supprimer)
-- Bouton "Nouvel Article"
+### Module Élèves
+- ✅ Créer un nouvel élève
+- ✅ Lister tous les élèves
+- ✅ Filtrer par filière
+- ✅ Modifier un élève
+- ✅ Supprimer un élève
+- ✅ Validation matricule et email uniques
 
-### 2. Créer un Article
-![Créer](screenshots/create.png)
-- Formulaire de saisie
-- Validation des champs
-- Boutons Enregistrer/Annuler
+### Module Cours
+- ✅ Créer un nouveau cours
+- ✅ Lister tous les cours
+- ✅ Modifier un cours
+- ✅ Supprimer un cours
+- ✅ Gestion des crédits
 
-### 3. Modifier un Article
-![Modifier](screenshots/edit.png)
-- Formulaire pré-rempli
-- Code désactivé (non modifiable)
-- Mise à jour désignation et prix
+### Module Dossiers Administratifs
+- ✅ Créer un dossier pour un élève
+- ✅ Lister tous les dossiers
+- ✅ Modifier le statut d'un dossier
+- ✅ Génération automatique du numéro d'inscription
 
-### 4. Messages de Confirmation
-![Messages](screenshots/messages.png)
-- Message de succès (vert)
-- Message d'erreur (rouge)
+## 🧪 Tests Manuels
 
+### Test 1: Création d'une Filière
+1. Accéder à "Filières" → "Nouvelle Filière"
+2. Remplir le formulaire:
+    - Code: INF101
+    - Nom: Informatique
+    - Description: Filière informatique générale
+3. Cliquer sur "Créer"
+4. Vérifier le message de succès
+5. **Capture d'écran**: Liste des filières avec la nouvelle filière
 
-## Bilan
+### Test 2: Création d'un Élève
+1. Accéder à "Élèves" → "Nouvel Élève"
+2. Remplir le formulaire:
+    - Matricule: E2024001
+    - Nom: DUPONT
+    - Prénom: Jean
+    - Email: jean.dupont@example.com
+    - Filière: Informatique
+3. Cliquer sur "Créer"
+4. **Capture d'écran**: Liste des élèves
 
-Cette application démontre:
-- Pattern MVC strict
-- Front Controller efficace
-- CRUD complet sans base de données
-- Code maintenable et extensible
-- Interface utilisateur moderne
+### Test 3: Modification d'un Élève
+1. Dans la liste des élèves, cliquer sur "Modifier"
+2. Changer l'email
+3. Valider
+4. **Capture d'écran**: Message de succès
+
+### Test 4: Suppression avec Contrainte
+1. Essayer de supprimer une filière avec des élèves inscrits
+2. Vérifier le message d'erreur
+3. **Capture d'écran**: Message d'erreur
+
+### Test 5: Filtrage
+1. Créer plusieurs élèves dans différentes filières
+2. Utiliser le filtre par filière
+3. **Capture d'écran**: Résultat du filtrage
+
+### Test 6: Validation des Doublons
+1. Essayer de créer un élève avec un matricule existant
+2. Vérifier le message d'erreur
+3. **Capture d'écran**: Message d'erreur de validation
+
+## 📊 Diagramme de Classes
+
+```
+┌─────────────────┐         ┌──────────────────┐
+│    Filiere      │1      * │      Eleve       │
+│─────────────────│◄────────│──────────────────│
+│ +id: Long       │         │ +id: Long        │
+│ +code: String   │         │ +matricule: Str  │
+│ +nom: String    │         │ +nom: String     │
+│ +description    │         │ +prenom: String  │
+└─────────────────┘         │ +email: String   │
+                            └──────────────────┘
+                                    │1
+                                    │
+                                    │1
+                            ┌───────▼──────────┐
+                            │ DossierAdmin     │
+                            │──────────────────│
+                            │ +id: Long        │
+                            │ +numeroInscr.    │
+                            │ +dateCreation    │
+                            └──────────────────┘
+```
+
+## 🔍 Points Importants
+
+### Best Practices Implémentées
+
+1. **Séparation des Responsabilités**: Couches Model-DAO-Service-Controller-View
+2. **Interface CRUD Générique**: Réutilisabilité du code
+3. **Validation des Données**: Côté service et base de données
+4. **Gestion des Transactions**: Commit/Rollback automatique
+5. **Pattern Singleton**: Pour EntityManagerFactory
+6. **Messages Utilisateur**: Feedback clair (succès/erreur)
+7. **Design Responsive**: Interface moderne et intuitive
+
+### Contraintes d'Intégrité
+
+- Code unique pour Filière
+- Matricule unique pour Élève
+- Email unique pour Élève
+- Une filière ne peut être supprimée si elle a des élèves
+- Relation OneToOne stricte entre Élève et Dossier
+
+## 🐛 Troubleshooting
+
+### Problème: Erreur de connexion à la base
+**Solution**: Vérifiez les paramètres dans `persistence.xml`
+
+### Problème: ClassNotFoundException
+**Solution**: Vérifiez que toutes les dépendances Maven sont téléchargées
+
+### Problème: 404 Not Found
+**Solution**: Vérifiez le context path de Tomcat
+
+## 👨‍💻 Auteur
+
+Projet académique - MVC avec Hibernate pur
+
+## 📄 Licence
+
+Ce projet est à usage éducatif uniquement.
+
+---
+
+**Note**: N'oubliez pas de prendre des captures d'écran pour chaque test effectué et de les inclure dans votre livrable PDF.
